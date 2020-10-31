@@ -24,6 +24,8 @@ except ImportError:
 
 from utils import open_file
 
+import random
+
 DATASETS_CONFIG = {
     "PaviaC": {
         "urls": [
@@ -82,7 +84,6 @@ try:
 except ImportError:
     pass
 
-
 class TqdmUpTo(tqdm):
     """Provides `update_to(n)` which uses `tqdm.update(delta_n)`."""
 
@@ -140,7 +141,7 @@ def DCT(img, band_group, use_freq):
         
     return output_img    
 
-def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, datasets=DATASETS_CONFIG):
+def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, band_sel=0, sel_mode="random", datasets=DATASETS_CONFIG):
     """Gets the dataset specified by name and return the related components.
     Args:
         dataset_name: string with the name of the dataset
@@ -361,13 +362,30 @@ def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, data
     # Normalization
     img = np.asarray(img, dtype="float32")
     
-    # DCT
+    # DCT or Band Selection
     if(band_group != 0):
         print("Split %d bands into %d groups and use %d frequency" % (img.shape[-1], band_group, use_freq))
         img = DCT(img, band_group, use_freq)
         rgb_bands = (0, 0, 0)
+    elif(band_sel != 0):       
+        if(sel_mode == "uniform"):
+            print("Apply Uniform Band Selection...")     
+            band_idx_sample = np.arange(0, img.shape[2], img.shape[2]//band_sel)[0:band_sel]
+        else:
+            print("Apply Random Band Selection...")        
+            band_idx = np.arange(img.shape[2])
+            random.shuffle(band_idx)
+            band_idx_sample = np.sort(band_idx[0:band_sel])
+        
+        print("Select %d bands from %d bands" % (band_sel, img.shape[2]))
+        print(band_idx_sample)
+        
+        # Extract those bands and normalize them
+        img = img[:, :, band_idx_sample]
+        img = (img - np.min(img)) / (np.max(img) - np.min(img))
+        rgb_bands = (0, 0, 0)
     else:
-        img = (img - np.min(img)) / (np.max(img) - np.min(img)) # ytshen comment: test data inside !?
+        img = (img - np.min(img)) / (np.max(img) - np.min(img))
     return img, gt, label_values, ignored_labels, rgb_bands, palette
 
 

@@ -1,25 +1,50 @@
 #!/bin/bash
 
-##############  4 groups  ##############
+# Identical throughout the experiment
+model="he_customized"
+dataset="IndianPines"
+trainingSample=0.8
+epoch=200
+cuda=0
+samplingMode="fixed"
+trainSet="train.mat"
+testSet="test.mat"
+valSet="val.mat"
+bandGroup=4
 
-############## 16 kernels ##############
-# w/o DCT (200 bands)
-python main.py --model he_full --dataset IndianPines --training_sample 0.8 --epoch 200 --cuda 0 --sampling_mode fixed --train_set train.mat --test_set test.mat --val_set val.mat --use_kernel 16 > ./log/band_200_CH_16.log
+# Variable throughout the experiment
+useKernel=(16 8 4)
+useFreq=(50 16 8 4 2 1)
+bandSelection=(64 32 16 8 4)
+numOfTest=5
 
-# 50 frequencies
-python main.py --model he_full --dataset IndianPines --training_sample 0.8 --epoch 200 --cuda 0 --sampling_mode fixed --train_set train.mat --test_set test.mat --val_set val.mat --band_group 4 --use_freq 50 --use_kernel 16 > ./log/group_4_freq_50_CH_16.log
+# Without DCT
+### Use all bands ###
+for c in ${useKernel[@]}; do
+	python main.py --model $model --dataset $dataset --training_sample $trainingSample --epoch $epoch --cuda $cuda --sampling_mode $samplingMode --train_set $trainSet --test_set $testSet --val_set $valSet --use_kernel $c > ./log/allBands_ch_${c}.log
+done
 
-# 16 frequencies
-python main.py --model he_full --dataset IndianPines --training_sample 0.8 --epoch 200 --cuda 0 --sampling_mode fixed --train_set train.mat --test_set test.mat --val_set val.mat --band_group 4 --use_freq 16 --use_kernel 16 > ./log/group_4_freq_16_CH_16.log
+### Use Random Band Selection ### 
+selectionMode="random"
+for c in ${useKernel[@]}; do
+	for b in ${bandSelection[@]}; do
+		for (( t=1; t<=$numOfTest; t++ )); do
+			python main.py --model $model --dataset $dataset --training_sample $trainingSample --epoch $epoch --cuda $cuda --sampling_mode $samplingMode --train_set $trainSet --test_set $testSet --val_set $valSet --use_kernel $c --band_selection $b --selection_mode $selectionMode > ./log/band_${b}_ch_${c}_${selectionMode}_test_${t}.log
+		done
+	done
+done
 
-# 8 frequencies (he_32)
-python main.py --model he_32 --dataset IndianPines --training_sample 0.8 --epoch 200 --cuda 0 --sampling_mode fixed --train_set train.mat --test_set test.mat --val_set val.mat --band_group 4 --use_freq 8 --use_kernel 16 > ./log/group_4_freq_8_CH_16.log
+### Use Uniform Band Selection ### 
+selectionMode="uniform"
+for c in ${useKernel[@]}; do
+	for b in ${bandSelection[@]}; do
+		python main.py --model $model --dataset $dataset --training_sample $trainingSample --epoch $epoch --cuda $cuda --sampling_mode $samplingMode --train_set $trainSet --test_set $testSet --val_set $valSet --use_kernel $c --band_selection $b --selection_mode $selectionMode > ./log/band_${b}_ch_${c}_${selectionMode}.log
+	done
+done
 
-# 4 frequencies (he_16)
-python main.py --model he_16 --dataset IndianPines --training_sample 0.8 --epoch 200 --cuda 0 --sampling_mode fixed --train_set train.mat --test_set test.mat --val_set val.mat --band_group 4 --use_freq 4 --use_kernel 16 > ./log/group_4_freq_4_CH_16.log
-
-# 2 frequencies (he_8)
-python main.py --model he_8 --dataset IndianPines --training_sample 0.8 --epoch 200 --cuda 0 --sampling_mode fixed --train_set train.mat --test_set test.mat --val_set val.mat --band_group 4 --use_freq 2 --use_kernel 16 > ./log/group_4_freq_2_CH_16.log
-
-# 1 frequencies (he_4)
-python main.py --model he_4 --dataset IndianPines --training_sample 0.8 --epoch 200 --cuda 0 --sampling_mode fixed --train_set train.mat --test_set test.mat --val_set val.mat --band_group 4 --use_freq 1 --use_kernel 16 > ./log/group_4_freq_1_CH_16.log
+# With DCT
+for c in ${useKernel[@]}; do 
+	for f in ${useFreq[@]}; do
+		python main.py --model $model --dataset $dataset --training_sample $trainingSample --epoch $epoch --cuda $cuda --sampling_mode $samplingMode --train_set $trainSet --test_set $testSet --val_set $valSet --band_group $bandGroup --use_freq $f --use_kernel $c > ./log/group_${bandGroup}_freq_${f}_ch_${c}.log
+	done
+done

@@ -139,6 +139,7 @@ group_dataset.add_argument(
     help="Path to the val ground truth (optional, this "
     "supersedes the --sampling_mode option)",
 )
+
 # Training options
 group_train = parser.add_argument_group("Training")
 group_train.add_argument(
@@ -171,6 +172,7 @@ group_train.add_argument(
     default=1,
     help="Sliding window step stride during inference (default = 1)",
 )
+
 # Data augmentation parameters
 group_da = parser.add_argument_group("Data augmentation")
 group_da.add_argument(
@@ -184,7 +186,6 @@ group_da.add_argument(
 group_da.add_argument(
     "--mixture_augmentation", action="store_true", help="Random mixes between spectra"
 )
-
 parser.add_argument(
     "--with_exploration", action="store_true", help="See data exploration visualization"
 )
@@ -215,7 +216,19 @@ group_dct.add_argument(
     "--use_kernel",
     type=int,
     default=16,
-    help="How many kernels to use",
+    help="How many kernels to use (default = 16)",
+)
+group_dct.add_argument(
+    "--band_selection",
+    type=int,
+    default=0,
+    help="Select some bands to use (default = 0)",
+)
+group_dct.add_argument(
+    "--selection_mode",
+    type=str,
+    default="random",
+    help="Selection mode" " (random/ uniform/ correlation, default: random)",
 )
 
 args = parser.parse_args()
@@ -262,6 +275,8 @@ TEST_STRIDE = args.test_stride
 BAND_GROUP = args.band_group
 USE_FREQ   = args.use_freq
 USE_KERNEL = args.use_kernel
+BAND_SELECT = args.band_selection
+SELECT_MODE = args.selection_mode
 
 if args.download is not None and len(args.download) > 0:
     for dataset in args.download:
@@ -272,10 +287,9 @@ viz = visdom.Visdom(env=DATASET + " " + MODEL)
 if not viz.check_connection:
     print("Visdom is not connected. Did you run 'python -m visdom.server' ?")
 
-
 hyperparams = vars(args)
 # Load the dataset
-img, gt, LABEL_VALUES, IGNORED_LABELS, RGB_BANDS, palette = get_dataset(DATASET, FOLDER, BAND_GROUP, USE_FREQ)
+img, gt, LABEL_VALUES, IGNORED_LABELS, RGB_BANDS, palette = get_dataset(DATASET, FOLDER, BAND_GROUP, USE_FREQ, BAND_SELECT, SELECT_MODE)
 # Number of classes
 N_CLASSES = len(LABEL_VALUES)
 # Number of bands (last dimension of the image tensor)
@@ -295,14 +309,11 @@ if palette is None:
         palette[k + 1] = tuple(np.asarray(255 * np.array(color), dtype="uint8"))
 invert_palette = {v: k for k, v in palette.items()}
 
-
 def convert_to_color(x):
     return convert_to_color_(x, palette=palette)
 
-
 def convert_from_color(x):
     return convert_from_color_(x, palette=invert_palette)
-
 
 # Instantiate the experiment based on predefined networks
 hyperparams.update(

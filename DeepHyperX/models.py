@@ -16,7 +16,6 @@ import joblib
 from tqdm import tqdm
 from utils import grouper, sliding_window, count_sliding_window, camel_to_snake
 
-
 def get_model(name, **kwargs):
     """
     Instantiate and obtain a model with adequate hyperparameters
@@ -109,51 +108,15 @@ def get_model(name, **kwargs):
         model = model.to(device)
         optimizer = optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.01)
         criterion = nn.CrossEntropyLoss(weight=kwargs["weights"])
-    elif name == "he_full":
+    elif name == "he_customized":
         kwargs.setdefault("patch_size", 7)
         kwargs.setdefault("batch_size", 40)
         lr = kwargs.setdefault("learning_rate", 0.01)
         center_pixel = True
-        model = HeEtAl_full(n_bands, n_classes, patch_size=kwargs["patch_size"], ch=use_kernel)
+        model = HeEtAl_customized(n_bands, n_classes, patch_size=kwargs["patch_size"], ch=use_kernel)
         model = model.to(device)
         optimizer = optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.01)
         criterion = nn.CrossEntropyLoss(weight=kwargs["weights"])
-    elif name == "he_32":
-        kwargs.setdefault("patch_size", 7)
-        kwargs.setdefault("batch_size", 40)
-        lr = kwargs.setdefault("learning_rate", 0.01)
-        center_pixel = True
-        model = HeEtAl_32(n_bands, n_classes, patch_size=kwargs["patch_size"], ch=use_kernel)
-        model = model.to(device)
-        optimizer = optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.01)
-        criterion = nn.CrossEntropyLoss(weight=kwargs["weights"])
-    elif name == "he_16":
-        kwargs.setdefault("patch_size", 7)
-        kwargs.setdefault("batch_size", 40)
-        lr = kwargs.setdefault("learning_rate", 0.01)
-        center_pixel = True
-        model = HeEtAl_16(n_bands, n_classes, patch_size=kwargs["patch_size"], ch=use_kernel)
-        model = model.to(device)
-        optimizer = optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.01)
-        criterion = nn.CrossEntropyLoss(weight=kwargs["weights"])
-    elif name == "he_8":
-        kwargs.setdefault("patch_size", 7)
-        kwargs.setdefault("batch_size", 40)
-        lr = kwargs.setdefault("learning_rate", 0.01)
-        center_pixel = True
-        model = HeEtAl_8(n_bands, n_classes, patch_size=kwargs["patch_size"], ch=use_kernel)
-        model = model.to(device)
-        optimizer = optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.01)
-        criterion = nn.CrossEntropyLoss(weight=kwargs["weights"]) 
-    elif name == "he_4":
-        kwargs.setdefault("patch_size", 7)
-        kwargs.setdefault("batch_size", 40)
-        lr = kwargs.setdefault("learning_rate", 0.01)
-        center_pixel = True
-        model = HeEtAl_4(n_bands, n_classes, patch_size=kwargs["patch_size"], ch=use_kernel)
-        model = model.to(device)
-        optimizer = optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.01)
-        criterion = nn.CrossEntropyLoss(weight=kwargs["weights"])         
     elif name == "luo":
         # All  the  experiments  are  settled  by  the  learning  rate  of  0.1,
         # the  decay  term  of  0.09  and  batch  size  of  100.
@@ -286,7 +249,6 @@ class Baseline(nn.Module):
         x = self.fc4(x)
         return x
 
-
 class HuEtAl(nn.Module):
     """
     Deep Convolutional Neural Networks for Hyperspectral Image Classification
@@ -339,7 +301,6 @@ class HuEtAl(nn.Module):
         x = torch.tanh(self.fc1(x))
         x = self.fc2(x)
         return x
-
 
 class HamidaEtAl(nn.Module):
     """
@@ -429,7 +390,6 @@ class HamidaEtAl(nn.Module):
         x = self.fc(x)
         return x
 
-
 class LeeEtAl(nn.Module):
     """
     CONTEXTUAL DEEP CNN BASED HYPERSPECTRAL CLASSIFICATION
@@ -514,7 +474,6 @@ class LeeEtAl(nn.Module):
         x = self.conv8(x)
         return x
 
-
 class ChenEtAl(nn.Module):
     """
     DEEP FEATURE EXTRACTION AND CLASSIFICATION OF HYPERSPECTRAL IMAGES BASED ON
@@ -575,7 +534,6 @@ class ChenEtAl(nn.Module):
         x = self.fc(x)
         return x
 
-
 class LiEtAl(nn.Module):
     """
     SPECTRAL–SPATIAL CLASSIFICATION OF HYPERSPECTRAL IMAGERY
@@ -632,7 +590,7 @@ class LiEtAl(nn.Module):
         x = self.fc(x)
         return x
 
-class HeEtAl_full(nn.Module):
+class HeEtAl_customized(nn.Module):
 
     @staticmethod
     def weight_init(m):
@@ -641,325 +599,59 @@ class HeEtAl_full(nn.Module):
             init.zeros_(m.bias)
 
     def __init__(self, input_channels, n_classes, patch_size=7, ch=16):
-        super(HeEtAl_full, self).__init__()
+        super(HeEtAl_customized, self).__init__()
         self.input_channels = input_channels
         self.patch_size = patch_size
         
-        self.conv1   = nn.Conv3d( 1, ch, (11, 3, 3), stride =(3, 1, 1))
+        # Adjust some parameters to make dimensions legitimate
+        kernel_1 = 11
+        kernel_2 = 11
+        kernel_3 = 5
+        stride_1 = 3
+        padding_1 = 0
+        padding_2 = 2
+        padding_3 = 5
+        if(input_channels == 32):
+            kernel_2 = 7
+            padding_3 = 3
+        elif(input_channels == 16):
+            kernel_2 = 3
+            kernel_3 = 3
+            stride_1 = 2
+            padding_1 = 1
+            padding_2 = 1
+            padding_3 = 1
+        elif(input_channels == 8):
+            kernel_1 = 7
+            kernel_2 = 3
+            kernel_3 = 3
+            stride_1 = 1
+            padding_1 = 1
+            padding_2 = 1
+            padding_3 = 1
+        elif(input_channels == 4):
+            kernel_1 = 3
+            kernel_2 = 3
+            kernel_3 = 3
+            stride_1 = 1
+            padding_1 = 1
+            padding_2 = 1
+            padding_3 = 1
+        
+        self.conv1   = nn.Conv3d( 1, ch, (kernel_1, 3, 3), stride =(stride_1, 1, 1), padding=(padding_1, 0, 0))
         self.conv2_1 = nn.Conv3d(ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
         self.conv2_2 = nn.Conv3d(ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_3 = nn.Conv3d(ch, ch, ( 5, 1, 1), padding=(2, 0, 0))
-        self.conv2_4 = nn.Conv3d(ch, ch, (11, 1, 1), padding=(5, 0, 0))
+        self.conv2_3 = nn.Conv3d(ch, ch, (kernel_3, 1, 1), padding=(padding_2, 0, 0))
+        self.conv2_4 = nn.Conv3d(ch, ch, (kernel_2, 1, 1), padding=(padding_3, 0, 0))
         self.conv3_1 = nn.Conv3d(ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
         self.conv3_2 = nn.Conv3d(ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_3 = nn.Conv3d(ch, ch, ( 5, 1, 1), padding=(2, 0, 0))
-        self.conv3_4 = nn.Conv3d(ch, ch, (11, 1, 1), padding=(5, 0, 0))
+        self.conv3_3 = nn.Conv3d(ch, ch, (kernel_3, 1, 1), padding=(padding_2, 0, 0))
+        self.conv3_4 = nn.Conv3d(ch, ch, (kernel_2, 1, 1), padding=(padding_3, 0, 0))
         self.conv4   = nn.Conv3d(ch, ch, ( 3, 2, 2))
         
-        self.pooling = nn.MaxPool2d((3, 2, 2), stride=(3, 2, 2))
-
         self.dropout = nn.Dropout(p=0.6)
-
         self.features_size = self._get_final_flattened_size()
-
         self.fc = nn.Linear(self.features_size, n_classes)
-
-        self.apply(self.weight_init)
-
-    def _get_final_flattened_size(self):
-        with torch.no_grad():
-            x = torch.zeros(
-                (1, 1, self.input_channels, self.patch_size, self.patch_size)
-            )
-            x = self.conv1(x)
-            x2_1 = self.conv2_1(x)
-            x2_2 = self.conv2_2(x)
-            x2_3 = self.conv2_3(x)
-            x2_4 = self.conv2_4(x)
-            x = x2_1 + x2_2 + x2_3 + x2_4
-            x3_1 = self.conv3_1(x)
-            x3_2 = self.conv3_2(x)
-            x3_3 = self.conv3_3(x)
-            x3_4 = self.conv3_4(x)
-            x = x3_1 + x3_2 + x3_3 + x3_4
-            x = self.conv4(x)
-            _, t, c, w, h = x.size()
-        return t * c * w * h
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x2_1 = self.conv2_1(x)
-        x2_2 = self.conv2_2(x)
-        x2_3 = self.conv2_3(x)
-        x2_4 = self.conv2_4(x)
-        x = x2_1 + x2_2 + x2_3 + x2_4
-        x = F.relu(x)
-        x3_1 = self.conv3_1(x)
-        x3_2 = self.conv3_2(x)
-        x3_3 = self.conv3_3(x)
-        x3_4 = self.conv3_4(x)
-        x = x3_1 + x3_2 + x3_3 + x3_4
-        x = F.relu(x)
-        x = F.relu(self.conv4(x))
-        x = x.view(-1, self.features_size)
-        x = self.dropout(x)
-        x = self.fc(x)
-        return x
-
-class HeEtAl_32(nn.Module):
-
-    @staticmethod
-    def weight_init(m):
-        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv3d):
-            init.kaiming_uniform(m.weight)
-            init.zeros_(m.bias)
-
-    def __init__(self, input_channels, n_classes, patch_size=7, ch=16):
-        super(HeEtAl_32, self).__init__()
-        self.input_channels = input_channels
-        self.patch_size = patch_size
-        
-        self.conv1   = nn.Conv3d(  1, ch, (11, 3, 3), stride =(3, 1, 1)) 
-        self.conv2_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv2_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_3 = nn.Conv3d( ch, ch, ( 5, 1, 1), padding=(2, 0, 0))
-        self.conv2_4 = nn.Conv3d( ch, ch, ( 7, 1, 1), padding=(3, 0, 0))
-        self.conv3_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv3_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_3 = nn.Conv3d( ch, ch, ( 5, 1, 1), padding=(2, 0, 0))
-        self.conv3_4 = nn.Conv3d( ch, ch, ( 7, 1, 1), padding=(3, 0, 0))
-        self.conv4   = nn.Conv3d( ch, ch, ( 3, 2, 2))
-        
-        self.pooling = nn.MaxPool2d((3, 2, 2), stride=(3, 2, 2))
-
-        self.dropout = nn.Dropout(p=0.6)
-
-        self.features_size = self._get_final_flattened_size()
-
-        self.fc = nn.Linear(self.features_size, n_classes)
-
-        self.apply(self.weight_init)
-
-    def _get_final_flattened_size(self):
-        with torch.no_grad():
-            x = torch.zeros(
-                (1, 1, self.input_channels, self.patch_size, self.patch_size)
-            )
-            x = self.conv1(x)
-            x2_1 = self.conv2_1(x)
-            x2_2 = self.conv2_2(x)
-            x2_3 = self.conv2_3(x)
-            x2_4 = self.conv2_4(x)
-            x = x2_1 + x2_2 + x2_3 + x2_4
-            x3_1 = self.conv3_1(x)
-            x3_2 = self.conv3_2(x)
-            x3_3 = self.conv3_3(x)
-            x3_4 = self.conv3_4(x)
-            x = x3_1 + x3_2 + x3_3 + x3_4
-            x = self.conv4(x)
-            _, t, c, w, h = x.size()
-        return t * c * w * h
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x2_1 = self.conv2_1(x)
-        x2_2 = self.conv2_2(x)
-        x2_3 = self.conv2_3(x)
-        x2_4 = self.conv2_4(x)
-        x = x2_1 + x2_2 + x2_3 + x2_4
-        x = F.relu(x)
-        x3_1 = self.conv3_1(x)
-        x3_2 = self.conv3_2(x)
-        x3_3 = self.conv3_3(x)
-        x3_4 = self.conv3_4(x)
-        x = x3_1 + x3_2 + x3_3 + x3_4
-        x = F.relu(x)
-        x = F.relu(self.conv4(x))
-        x = x.view(-1, self.features_size)
-        x = self.dropout(x)
-        x = self.fc(x)
-        return x
-
-class HeEtAl_16(nn.Module):
-
-    @staticmethod
-    def weight_init(m):
-        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv3d):
-            init.kaiming_uniform(m.weight)
-            init.zeros_(m.bias)
-
-    def __init__(self, input_channels, n_classes, patch_size=7, ch=16):
-        super(HeEtAl_16, self).__init__()
-        self.input_channels = input_channels
-        self.patch_size = patch_size
-        
-        self.conv1   = nn.Conv3d(  1, ch, (11, 3, 3), stride =(2, 1, 1), padding=(1, 0, 0)) 
-        self.conv2_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv2_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_3 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_4 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv3_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_3 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_4 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv4   = nn.Conv3d( ch, ch, ( 3, 2, 2))
-        
-        self.pooling = nn.MaxPool2d((3, 2, 2), stride=(3, 2, 2))
-
-        self.dropout = nn.Dropout(p=0.6)
-
-        self.features_size = self._get_final_flattened_size()
-
-        self.fc = nn.Linear(self.features_size, n_classes)
-
-        self.apply(self.weight_init)
-
-    def _get_final_flattened_size(self):
-        with torch.no_grad():
-            x = torch.zeros(
-                (1, 1, self.input_channels, self.patch_size, self.patch_size)
-            )
-            x = self.conv1(x)
-            x2_1 = self.conv2_1(x)
-            x2_2 = self.conv2_2(x)
-            x2_3 = self.conv2_3(x)
-            x2_4 = self.conv2_4(x)
-            x = x2_1 + x2_2 + x2_3 + x2_4
-            x3_1 = self.conv3_1(x)
-            x3_2 = self.conv3_2(x)
-            x3_3 = self.conv3_3(x)
-            x3_4 = self.conv3_4(x)
-            x = x3_1 + x3_2 + x3_3 + x3_4
-            x = self.conv4(x)
-            _, t, c, w, h = x.size()
-        return t * c * w * h
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x2_1 = self.conv2_1(x)
-        x2_2 = self.conv2_2(x)
-        x2_3 = self.conv2_3(x)
-        x2_4 = self.conv2_4(x)
-        x = x2_1 + x2_2 + x2_3 + x2_4
-        x = F.relu(x)
-        x3_1 = self.conv3_1(x)
-        x3_2 = self.conv3_2(x)
-        x3_3 = self.conv3_3(x)
-        x3_4 = self.conv3_4(x)
-        x = x3_1 + x3_2 + x3_3 + x3_4
-        x = F.relu(x)
-        x = F.relu(self.conv4(x))
-        x = x.view(-1, self.features_size)
-        x = self.dropout(x)
-        x = self.fc(x)
-        return x
-        
-class HeEtAl_8(nn.Module):
-
-    @staticmethod
-    def weight_init(m):
-        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv3d):
-            init.kaiming_uniform(m.weight)
-            init.zeros_(m.bias)
-
-    def __init__(self, input_channels, n_classes, patch_size=7, ch=16):
-        super(HeEtAl_8, self).__init__()
-        self.input_channels = input_channels
-        self.patch_size = patch_size
-        
-        self.conv1   = nn.Conv3d(  1, ch, ( 7, 3, 3), stride =(1, 1, 1), padding=(1, 0, 0)) 
-        self.conv2_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv2_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_3 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_4 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv3_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_3 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_4 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv4   = nn.Conv3d( ch, ch, ( 3, 2, 2))
-        
-        self.pooling = nn.MaxPool2d((3, 2, 2), stride=(3, 2, 2))
-
-        self.dropout = nn.Dropout(p=0.6)
-
-        self.features_size = self._get_final_flattened_size()
-
-        self.fc = nn.Linear(self.features_size, n_classes)
-
-        self.apply(self.weight_init)
-
-    def _get_final_flattened_size(self):
-        with torch.no_grad():
-            x = torch.zeros(
-                (1, 1, self.input_channels, self.patch_size, self.patch_size)
-            )
-            x = self.conv1(x)
-            x2_1 = self.conv2_1(x)
-            x2_2 = self.conv2_2(x)
-            x2_3 = self.conv2_3(x)
-            x2_4 = self.conv2_4(x)
-            x = x2_1 + x2_2 + x2_3 + x2_4
-            x3_1 = self.conv3_1(x)
-            x3_2 = self.conv3_2(x)
-            x3_3 = self.conv3_3(x)
-            x3_4 = self.conv3_4(x)
-            x = x3_1 + x3_2 + x3_3 + x3_4
-            x = self.conv4(x)
-            _, t, c, w, h = x.size()
-        return t * c * w * h
-
-    def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x2_1 = self.conv2_1(x)
-        x2_2 = self.conv2_2(x)
-        x2_3 = self.conv2_3(x)
-        x2_4 = self.conv2_4(x)
-        x = x2_1 + x2_2 + x2_3 + x2_4
-        x = F.relu(x)
-        x3_1 = self.conv3_1(x)
-        x3_2 = self.conv3_2(x)
-        x3_3 = self.conv3_3(x)
-        x3_4 = self.conv3_4(x)
-        x = x3_1 + x3_2 + x3_3 + x3_4
-        x = F.relu(x)
-        x = F.relu(self.conv4(x))
-        x = x.view(-1, self.features_size)
-        x = self.dropout(x)
-        x = self.fc(x)
-        return x
-        
-class HeEtAl_4(nn.Module):
-
-    @staticmethod
-    def weight_init(m):
-        if isinstance(m, nn.Linear) or isinstance(m, nn.Conv3d):
-            init.kaiming_uniform(m.weight)
-            init.zeros_(m.bias)
-
-    def __init__(self, input_channels, n_classes, patch_size=7, ch=16):
-        super(HeEtAl_4, self).__init__()
-        self.input_channels = input_channels
-        self.patch_size = patch_size
-        
-        self.conv1   = nn.Conv3d(  1, ch, ( 3, 3, 3), stride =(1, 1, 1), padding=(1, 0, 0)) 
-        self.conv2_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv2_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_3 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv2_4 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_1 = nn.Conv3d( ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv3_2 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_3 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv3_4 = nn.Conv3d( ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
-        self.conv4   = nn.Conv3d( ch, ch, ( 3, 2, 2))
-        
-        self.pooling = nn.MaxPool2d((3, 2, 2), stride=(3, 2, 2))
-
-        self.dropout = nn.Dropout(p=0.6)
-
-        self.features_size = self._get_final_flattened_size()
-
-        self.fc = nn.Linear(self.features_size, n_classes)
-
         self.apply(self.weight_init)
 
     def _get_final_flattened_size(self):
@@ -1148,7 +840,6 @@ class LuoEtAl(nn.Module):
         x = self.fc2(x)
         return x
 
-
 class SharmaEtAl(nn.Module):
     """
     HYPERSPECTRAL CNN FOR IMAGE CLASSIFICATION & BAND SELECTION, WITH APPLICATION
@@ -1227,7 +918,6 @@ class SharmaEtAl(nn.Module):
         x = self.dropout(x)
         x = self.fc2(x)
         return x
-
 
 class LiuEtAl(nn.Module):
     """
@@ -1308,7 +998,6 @@ class LiuEtAl(nn.Module):
         x = self.fc4_dec(x)
         return x_classif, x
 
-
 class BoulchEtAl(nn.Module):
     """
     Autoencodeurs pour la visualisation d'images hyperspectrales
@@ -1378,7 +1067,6 @@ class BoulchEtAl(nn.Module):
         x = self.regressor(x)
         return x_classif, x
 
-
 class MouEtAl(nn.Module):
     """
     Deep recurrent neural networks for hyperspectral image classification
@@ -1416,7 +1104,6 @@ class MouEtAl(nn.Module):
         x = self.fc(x)
         return x
 
-
 def train(
     net,
     optimizer,
@@ -1452,7 +1139,7 @@ def train(
 
     net.to(device)
 
-    save_epoch = epoch // 20 if epoch > 20 else 1
+    save_epoch = epoch // 5 if epoch > 5 else 1
 
     losses = np.zeros(1000000)
     mean_losses = np.zeros(100000000)
@@ -1554,7 +1241,6 @@ def train(
                 epoch=e,
                 metric=abs(metric),
             )
-
 
 def save_model(model, model_name, dataset_name, **kwargs):
     model_dir = "./checkpoints/" + model_name + "/" + dataset_name + "/"
