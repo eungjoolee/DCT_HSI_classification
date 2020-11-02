@@ -604,41 +604,48 @@ class HeEtAl_customized(nn.Module):
         self.patch_size = patch_size
         
         # Adjust some parameters to make dimensions legitimate
-        kernel_1 = 11
-        kernel_2 = 11
-        kernel_3 = 5
-        stride_1 = 3
-        padding_1 = 0
-        padding_2 = 2
-        padding_3 = 5
-        if(input_channels == 32):
-            kernel_2 = 7
+        if input_channels == 32:
+            kernel_1  = 11
+            kernel_2  = 7
+            kernel_3  = 5
+            stride_1  = 3
+            padding_1 = 0
+            padding_2 = 2
             padding_3 = 3
-        elif(input_channels == 16):
-            kernel_2 = 3
-            kernel_3 = 3
-            stride_1 = 2
+        elif input_channels == 16:
+            kernel_1  = 11
+            kernel_2  = 3
+            kernel_3  = 3
+            stride_1  = 2
             padding_1 = 1
             padding_2 = 1
             padding_3 = 1
-        elif(input_channels == 8):
-            kernel_1 = 7
-            kernel_2 = 3
-            kernel_3 = 3
-            stride_1 = 1
+        elif input_channels == 8:
+            kernel_1  = 5
+            kernel_2  = 3
+            kernel_3  = 3
+            stride_1  = 2
             padding_1 = 1
             padding_2 = 1
             padding_3 = 1
-        elif(input_channels == 4):
-            kernel_1 = 3
-            kernel_2 = 3
-            kernel_3 = 3
-            stride_1 = 1
+        elif input_channels == 4:
+            kernel_1  = 3
+            kernel_2  = 3
+            kernel_3  = 3
+            stride_1  = 1
             padding_1 = 1
             padding_2 = 1
             padding_3 = 1
+        else:
+            kernel_1  = 11
+            kernel_2  = 11
+            kernel_3  = 5
+            stride_1  = 3
+            padding_1 = 0
+            padding_2 = 2
+            padding_3 = 5
         
-        self.conv1   = nn.Conv3d( 1, ch, (kernel_1, 3, 3), stride =(stride_1, 1, 1), padding=(padding_1, 0, 0))
+        self.conv1   = nn.Conv3d( 1, ch, (kernel_1, 3, 3), stride=(stride_1, 1, 1), padding=(padding_1, 0, 0))
         self.conv2_1 = nn.Conv3d(ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
         self.conv2_2 = nn.Conv3d(ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
         self.conv2_3 = nn.Conv3d(ch, ch, (kernel_3, 1, 1), padding=(padding_2, 0, 0))
@@ -649,9 +656,14 @@ class HeEtAl_customized(nn.Module):
         self.conv3_4 = nn.Conv3d(ch, ch, (kernel_2, 1, 1), padding=(padding_3, 0, 0))
         self.conv4   = nn.Conv3d(ch, ch, ( 3, 2, 2))
         
+        self.pooling = nn.MaxPool2d((3, 2, 2), stride=(3, 2, 2))
+        # the ratio of dropout is 0.6 in our experiments
         self.dropout = nn.Dropout(p=0.6)
+        
         self.features_size = self._get_final_flattened_size()
+        
         self.fc = nn.Linear(self.features_size, n_classes)
+        
         self.apply(self.weight_init)
 
     def _get_final_flattened_size(self):
