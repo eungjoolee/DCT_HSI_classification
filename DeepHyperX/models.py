@@ -608,53 +608,68 @@ class HeEtAl_customized(nn.Module):
             kernel_1  = 11
             kernel_2  = 7
             kernel_3  = 5
+            kernel_4  = 3
+            kernel_5  = 3
             stride_1  = 3
             padding_1 = 0
             padding_2 = 2
             padding_3 = 3
+            padding_4 = 1
         elif input_channels == 16:
             kernel_1  = 11
             kernel_2  = 3
             kernel_3  = 3
+            kernel_4  = 3
+            kernel_5  = 3
             stride_1  = 2
             padding_1 = 1
             padding_2 = 1
             padding_3 = 1
+            padding_4 = 1
         elif input_channels == 8:
             kernel_1  = 5
             kernel_2  = 3
             kernel_3  = 3
+            kernel_4  = 3
+            kernel_5  = 3
             stride_1  = 2
             padding_1 = 1
             padding_2 = 1
             padding_3 = 1
+            padding_4 = 1
         elif input_channels == 4:
             kernel_1  = 3
-            kernel_2  = 3
-            kernel_3  = 3
+            kernel_2  = 1
+            kernel_3  = 1
+            kernel_4  = 2
+            kernel_5  = 1
             stride_1  = 1
-            padding_1 = 1
-            padding_2 = 1
-            padding_3 = 1
+            padding_1 = 0
+            padding_2 = 0
+            padding_3 = 0
+            padding_4 = 0
         else:
             kernel_1  = 11
             kernel_2  = 11
             kernel_3  = 5
+            kernel_4  = 3
+            kernel_5  = 3
             stride_1  = 3
             padding_1 = 0
             padding_2 = 2
             padding_3 = 5
+            padding_4 = 1
         
         self.conv1   = nn.Conv3d( 1, ch, (kernel_1, 3, 3), stride=(stride_1, 1, 1), padding=(padding_1, 0, 0))
         self.conv2_1 = nn.Conv3d(ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv2_2 = nn.Conv3d(ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
+        self.conv2_2 = nn.Conv3d(ch, ch, (kernel_5, 1, 1), padding=(padding_4, 0, 0))
         self.conv2_3 = nn.Conv3d(ch, ch, (kernel_3, 1, 1), padding=(padding_2, 0, 0))
         self.conv2_4 = nn.Conv3d(ch, ch, (kernel_2, 1, 1), padding=(padding_3, 0, 0))
         self.conv3_1 = nn.Conv3d(ch, ch, ( 1, 1, 1), padding=(0, 0, 0))
-        self.conv3_2 = nn.Conv3d(ch, ch, ( 3, 1, 1), padding=(1, 0, 0))
+        self.conv3_2 = nn.Conv3d(ch, ch, (kernel_5, 1, 1), padding=(padding_4, 0, 0))
         self.conv3_3 = nn.Conv3d(ch, ch, (kernel_3, 1, 1), padding=(padding_2, 0, 0))
         self.conv3_4 = nn.Conv3d(ch, ch, (kernel_2, 1, 1), padding=(padding_3, 0, 0))
-        self.conv4   = nn.Conv3d(ch, ch, ( 3, 2, 2))
+        self.conv4   = nn.Conv3d(ch, ch, (kernel_4, 2, 2))
         
         self.pooling = nn.MaxPool2d((3, 2, 2), stride=(3, 2, 2))
         # the ratio of dropout is 0.6 in our experiments
