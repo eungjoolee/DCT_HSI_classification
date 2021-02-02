@@ -1143,6 +1143,7 @@ def train(
     display=None,
     val_loader=None,
     supervision="full",
+    name=None,
 ):
     """
     Training loop to optimize a network for several epochs and a specified loss
@@ -1173,6 +1174,9 @@ def train(
     iter_ = 1
     loss_win, val_win = None, None
     val_accuracies = []
+    
+    train_title = "Training loss" if name is None else ("TL " + name) 
+    val_title = "Validation accuracy" if name is None else ("VA " + name) 
 
     for e in tqdm(range(1, epoch + 1), desc="Training the network"):
         # Set the network to training mode
@@ -1217,14 +1221,14 @@ def train(
                     100.0 * batch_idx / len(data_loader),
                     mean_losses[iter_],
                 )
-                update = None if loss_win is None else "append"
+                update = None if loss_win is None else "append"                
                 loss_win = display.line(
                     X=np.arange(iter_ - display_iter, iter_),
                     Y=mean_losses[iter_ - display_iter : iter_],
                     win=loss_win,
                     update=update,
                     opts={
-                        "title": "Training loss",
+                        "title": train_title,
                         "xlabel": "Iterations",
                         "ylabel": "Loss",
                     },
@@ -1237,7 +1241,7 @@ def train(
                         X=np.arange(len(val_accuracies)),
                         win=val_win,
                         opts={
-                            "title": "Validation accuracy",
+                            "title": val_title,
                             "xlabel": "Epochs",
                             "ylabel": "Accuracy",
                         },

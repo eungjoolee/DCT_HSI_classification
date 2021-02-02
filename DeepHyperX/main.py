@@ -278,6 +278,14 @@ USE_KERNEL = args.use_kernel
 BAND_SELECT = args.band_selection
 SELECT_MODE = args.selection_mode
 
+# NAME
+if BAND_GROUP is not 0:
+    NAME = "gp_%d_fq_%d_ch_%d" % (BAND_GROUP, USE_FREQ, USE_KERNEL)
+elif BAND_SELECT is not 0:
+    NAME = "bd_%d_ch_%d_%s" % (BAND_SELECT, USE_KERNEL, SELECT_MODE)
+else:
+    NAME = "bd_all_ch_%d" % USE_KERNEL
+
 if args.download is not None and len(args.download) > 0:
     for dataset in args.download:
         get_dataset(dataset, target_folder=FOLDER)
@@ -474,6 +482,7 @@ for run in range(N_RUNS):
                 supervision=hyperparams["supervision"],
                 val_loader=val_loader,
                 display=viz,
+                name=NAME,
             )
         except KeyboardInterrupt:
             # Allow the user to stop the training

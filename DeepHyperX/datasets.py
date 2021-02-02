@@ -138,7 +138,7 @@ def DCT(img, band_group, use_freq):
         add_img = img_dct[:, :, AC_idx[AC_idx < img.shape[-1]]]
         add_img = (add_img - add_img.min()) / (add_img.max() - add_img.min()) # Normalization
         output_img = np.concatenate((output_img, add_img), axis=2)
-        
+            
     return output_img    
 
 def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, band_sel=0, sel_mode="random", datasets=DATASETS_CONFIG):
@@ -371,6 +371,26 @@ def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, band
         if(sel_mode == "uniform"):
             print("Apply Uniform Band Selection...")     
             band_idx_sample = np.arange(0, img.shape[2], img.shape[2]//band_sel)[0:band_sel]
+        elif((sel_mode == "correlation") & (dataset_name == "IndianPines")):
+            print("Apply Correlation-Matrix Based Band Selection...")
+            # seperated by correlation matrix
+            endpoint = np.array([30, 45, 25, 100])
+            
+            # sampling equal number of bands in each group (now: 4 groups)
+            samples_in_group = band_sel//4
+            
+            # first group
+            offset = endpoint[0]
+            band_idx_sample = np.around(np.linspace(0, endpoint[0]-1, num=samples_in_group))
+            
+            # other groups
+            for idx in range(1, 4, 1):
+                add_idx_sample = np.around(np.linspace(offset, endpoint[idx]+offset-1, num=samples_in_group))
+                band_idx_sample = np.concatenate((band_idx_sample, add_idx_sample))
+                offset += endpoint[idx]    
+
+            # indices are required to be int
+            band_idx_sample = band_idx_sample.astype(int)
         else:
             print("Apply Random Band Selection...")        
             band_idx = np.arange(img.shape[2])
