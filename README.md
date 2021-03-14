@@ -1,7 +1,7 @@
-# hyperspectral_classification
+# DCT-based hyperspectral image classification
 
 ### Project Description
-- This repository contains the PyTorch code for the paper DCT-based Hyperspectral Image Classification onResource-Constrained Platforms. It is accepted to the conference, IEEE, Whisper 2021.
+- This repository contains the PyTorch code for the paper DCT-based Hyperspectral Image Classification on Resource-Constrained Platforms. It is accepted to the conference, IEEE, Whisper 2021.
 
 ### Experiments
 #### Run Experiments
