@@ -2,10 +2,6 @@
 
 A Python tool to perform deep learning experiments on various hyperspectral datasets.
 
-![https://www.onera.fr/en/research/information-processing-and-systems-domain](https://www.onera.fr/sites/default/files/logo-onera.png|height=60)
-
-![https://www-obelix.irisa.fr/](https://www.irisa.fr/sites/all/themes/irisa_theme/logoIRISA-web.png|width=60)
-
 ## Reference
 
 This toolbox was used for our review paper in Geoscience and Remote Sensing Magazine :
@@ -146,5 +142,3 @@ Examples:
     This runs on GPU a basic 4-layers fully connected neural network on the Pavia University dataset, using 10% of the samples for training.
   * `python main.py --model hamida --dataset PaviaU --training_sample 0.5 --patch_size 7 --epoch 50 --cuda`
     This runs on GPU the 3D CNN from Hamida et al. on the Pavia University dataset with a patch size of 7, using 50% of the samples for training and optimizing for 50 epochs.
-
-[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/nshaud)
