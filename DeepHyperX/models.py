@@ -39,6 +39,12 @@ def get_model(name, **kwargs):
     
     use_kernel = kwargs["n_kernel"]
 
+    # KD
+    t_band_group = kwargs["t_band_group"]
+    if(t_band_group != 0):
+        t_n_bands = kwargs["t_n_bands"]
+        t_use_kernel = kwargs["t_use_kernel"]
+
     if name == "nn":
         kwargs.setdefault("patch_size", 1)
         center_pixel = True
@@ -117,6 +123,12 @@ def get_model(name, **kwargs):
         model = model.to(device)
         optimizer = optim.Adagrad(model.parameters(), lr=lr, weight_decay=0.01)
         criterion = nn.CrossEntropyLoss(weight=kwargs["weights"])
+
+        # KD
+        if(t_band_group != 0):
+            t_model = HeEtAl_customized(t_n_bands, n_classes, patch_size=kwargs["patch_size"], ch=t_use_kernel)
+            t_model = t_model.to(device)
+
     elif name == "luo":
         # All  the  experiments  are  settled  by  the  learning  rate  of  0.1,
         # the  decay  term  of  0.09  and  batch  size  of  100.
@@ -209,7 +221,11 @@ def get_model(name, **kwargs):
     kwargs.setdefault("radiation_augmentation", False)
     kwargs.setdefault("mixture_augmentation", False)
     kwargs["center_pixel"] = center_pixel
-    return model, optimizer, criterion, kwargs
+
+    if(t_band_group != 0):
+        return model, t_model, optimizer, criterion, kwargs        
+    else:
+        return model, optimizer, criterion, kwargs
 
 
 class Baseline(nn.Module):
@@ -1144,6 +1160,10 @@ def train(
     val_loader=None,
     supervision="full",
     name=None,
+    t_net=None,
+    t_alpha=0.9,
+    t_temp=20,
+    n_bands=0,
 ):
     """
     Training loop to optimize a network for several epochs and a specified loss
@@ -1167,6 +1187,19 @@ def train(
 
     net.to(device)
 
+    # KD
+    if(t_net is not None):
+        t_net.to(device)
+        t_net.eval()
+
+        ce_losses = np.zeros(1000000)
+        mean_ce_losses = np.zeros(100000000)        
+
+        kl_losses = np.zeros(1000000)
+        mean_kl_losses = np.zeros(100000000)
+
+        ce_loss_win, kl_loss_win = None, None
+
     save_epoch = epoch // 5 if epoch > 5 else 1
 
     losses = np.zeros(1000000)
@@ -1183,6 +1216,10 @@ def train(
         net.train()
         avg_loss = 0.0
 
+        if(t_net is not None):
+            avg_ce_loss = 0.0
+            avg_kl_loss = 0.0
+
         # Run the training loop for one epoch
         for batch_idx, (data, target) in tqdm(
             enumerate(data_loader), total=len(data_loader)
@@ -1192,8 +1229,21 @@ def train(
 
             optimizer.zero_grad()
             if supervision == "full":
-                output = net(data)
-                loss = criterion(output, target)
+                if(t_net is not None):
+                    output = net(data[:, :, :n_bands, :, :])
+
+                    with torch.no_grad():
+                        t_output = t_net(data[:, :, n_bands:, :, :])
+
+                    ce_loss = criterion(output, target) * (1. - t_alpha)
+                    kl_loss = nn.KLDivLoss()(F.log_softmax(output/t_temp, dim=1),
+                               F.softmax(t_output/t_temp, dim=1)) * (t_alpha * t_temp * t_temp)
+                    loss = ce_loss + kl_loss
+
+                else:
+                    output = net(data)
+                    loss = criterion(output, target)
+
             elif supervision == "semi":
                 outs = net(data)
                 output, rec = outs
@@ -1204,12 +1254,22 @@ def train(
                 raise ValueError(
                     'supervision mode "{}" is unknown.'.format(supervision)
                 )
+
             loss.backward()
             optimizer.step()
 
             avg_loss += loss.item()
             losses[iter_] = loss.item()
             mean_losses[iter_] = np.mean(losses[max(0, iter_ - 100) : iter_ + 1])
+
+            if(t_net is not None):
+                avg_ce_loss += ce_loss.item()
+                ce_losses[iter_] = ce_loss.item()
+                mean_ce_losses[iter_] = np.mean(ce_losses[max(0, iter_ - 100) : iter_ + 1])
+
+                avg_kl_loss += kl_loss.item()
+                kl_losses[iter_] = kl_loss.item()
+                mean_kl_losses[iter_] = np.mean(kl_losses[max(0, iter_ - 100) : iter_ + 1])                
 
             if display_iter and iter_ % display_iter == 0:
                 string = "Train (epoch {}/{}) [{}/{} ({:.0f}%)]\tLoss: {:.6f}"
@@ -1221,18 +1281,42 @@ def train(
                     100.0 * batch_idx / len(data_loader),
                     mean_losses[iter_],
                 )
-                update = None if loss_win is None else "append"                
+
                 loss_win = display.line(
-                    X=np.arange(iter_ - display_iter, iter_),
-                    Y=mean_losses[iter_ - display_iter : iter_],
+                    X=np.arange(0, iter_),
+                    Y=mean_losses[ : iter_],
                     win=loss_win,
-                    update=update,
                     opts={
                         "title": train_title,
                         "xlabel": "Iterations",
                         "ylabel": "Loss",
                     },
                 )
+
+                # KD
+                if(t_net is not None):
+                    ce_loss_win = display.line(
+                        X=np.arange(0, iter_),
+                        Y=mean_ce_losses[ : iter_],
+                        win=ce_loss_win,
+                        opts={
+                            "title": train_title,
+                            "xlabel": "Iterations",
+                            "ylabel": "CE_Loss",
+                        },
+                    )
+
+                    kl_loss_win = display.line(
+                        X=np.arange(0, iter_),
+                        Y=mean_kl_losses[ : iter_],
+                        win=kl_loss_win,
+                        opts={
+                            "title": train_title,
+                            "xlabel": "Iterations",
+                            "ylabel": "KL_Loss",
+                        },
+                    )                
+
                 tqdm.write(string)
 
                 if len(val_accuracies) > 0:
@@ -1246,13 +1330,21 @@ def train(
                             "ylabel": "Accuracy",
                         },
                     )
+
             iter_ += 1
-            del (data, target, loss, output)
+
+            if(t_net is not None):
+                del (data, target, loss, ce_loss, kl_loss, output, t_output)
+            else:
+                del (data, target, loss, output)
 
         # Update the scheduler
         avg_loss /= len(data_loader)
         if val_loader is not None:
-            val_acc = val(net, val_loader, device=device, supervision=supervision)
+            if(t_net is not None):
+                val_acc = val(net, val_loader, device=device, supervision=supervision, n_bands=n_bands)                
+            else:
+                val_acc = val(net, val_loader, device=device, supervision=supervision)
             val_accuracies.append(val_acc)
             metric = -val_acc
         else:
@@ -1269,11 +1361,12 @@ def train(
                 net,
                 camel_to_snake(str(net.__class__.__name__)),
                 data_loader.dataset.name,
+                name,
                 epoch=e,
                 metric=abs(metric),
             )
 
-def save_model(model, model_name, dataset_name, **kwargs):
+def save_model(model, model_name, dataset_name, model_param, **kwargs):
     model_dir = "./checkpoints/" + model_name + "/" + dataset_name + "/"
     if not os.path.isdir(model_dir):
         os.makedirs(model_dir, exist_ok=True)
@@ -1281,6 +1374,8 @@ def save_model(model, model_name, dataset_name, **kwargs):
         filename = str(datetime.datetime.now()) + "_epoch{epoch}_{metric:.2f}".format(
             **kwargs
         )
+        if(model_param is not None):
+            filename = filename + "_" + model_param
         tqdm.write("Saving neural network weights in {}".format(filename))
         torch.save(model.state_dict(), model_dir + filename + ".pth")
     else:
@@ -1342,7 +1437,7 @@ def test(net, img, hyperparams):
     return probs
 
 
-def val(net, data_loader, device="cpu", supervision="full"):
+def val(net, data_loader, device="cpu", supervision="full", n_bands=0):
     # TODO : fix me using metrics()
     accuracy, total = 0.0, 0.0
     ignored_labels = data_loader.dataset.ignored_labels
@@ -1351,7 +1446,10 @@ def val(net, data_loader, device="cpu", supervision="full"):
             # Load the data into the GPU if required
             data, target = data.to(device), target.to(device)
             if supervision == "full":
-                output = net(data)
+                if(n_bands != 0):
+                    output = net(data[:, :, :n_bands, :, :])
+                else:
+                    output = net(data)
             elif supervision == "semi":
                 outs = net(data)
                 output, rec = outs

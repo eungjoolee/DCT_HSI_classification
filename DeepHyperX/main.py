@@ -10,6 +10,7 @@ This code is released under the GPLv3 license for non-commercial and research
 purposes only.
 For commercial use, please contact the authors.
 """
+
 # Python 2/3 compatiblity
 from __future__ import print_function
 from __future__ import division
@@ -58,10 +59,15 @@ dataset_names = [
 
 # Argument parser for CLI interaction
 parser = argparse.ArgumentParser(
-    description="Run deep learning experiments on" " various hyperspectral datasets"
+    description="Run deep learning experiments on" 
+    " various hyperspectral datasets"
 )
 parser.add_argument(
-    "--dataset", type=str, default=None, choices=dataset_names, help="Dataset to use."
+    "--dataset", 
+    type=str, 
+    default=None, 
+    choices=dataset_names, 
+    help="Dataset to use."
 )
 parser.add_argument(
     "--model",
@@ -96,7 +102,12 @@ parser.add_argument(
     default=-1,
     help="Specify CUDA device (defaults to -1, which learns on CPU)",
 )
-parser.add_argument("--runs", type=int, default=1, help="Number of runs (default: 1)")
+parser.add_argument(
+	"--runs", 
+	type=int, 
+	default=1, 
+	help="Number of runs (default: 1)"
+)
 parser.add_argument(
     "--restore",
     type=str,
@@ -115,7 +126,8 @@ group_dataset.add_argument(
 group_dataset.add_argument(
     "--sampling_mode",
     type=str,
-    help="Sampling mode" " (random sampling or disjoint, default: random)",
+    help="Sampling mode" 
+    " (random sampling or disjoint, default: random)",
     default="random",
 )
 group_dataset.add_argument(
@@ -145,7 +157,8 @@ group_train = parser.add_argument_group("Training")
 group_train.add_argument(
     "--epoch",
     type=int,
-    help="Training epochs (optional, if" " absent will be set by the model)",
+    help="Training epochs (optional, if" 
+    " absent will be set by the model)",
 )
 group_train.add_argument(
     "--patch_size",
@@ -154,7 +167,9 @@ group_train.add_argument(
     "absent will be set by the model)",
 )
 group_train.add_argument(
-    "--lr", type=float, help="Learning rate, set by the model if not specified."
+    "--lr", 
+    type=float, 
+    help="Learning rate, set by the model if not specified."
 )
 group_train.add_argument(
     "--class_balancing",
@@ -176,7 +191,9 @@ group_train.add_argument(
 # Data augmentation parameters
 group_da = parser.add_argument_group("Data augmentation")
 group_da.add_argument(
-    "--flip_augmentation", action="store_true", help="Random flips (if patch_size > 1)"
+    "--flip_augmentation", 
+    action="store_true", 
+    help="Random flips (if patch_size > 1)"
 )
 group_da.add_argument(
     "--radiation_augmentation",
@@ -184,10 +201,14 @@ group_da.add_argument(
     help="Random radiation noise (illumination)",
 )
 group_da.add_argument(
-    "--mixture_augmentation", action="store_true", help="Random mixes between spectra"
+    "--mixture_augmentation", 
+    action="store_true", 
+    help="Random mixes between spectra"
 )
 parser.add_argument(
-    "--with_exploration", action="store_true", help="See data exploration visualization"
+    "--with_exploration", 
+    action="store_true", 
+    help="See data exploration visualization"
 )
 parser.add_argument(
     "--download",
@@ -228,7 +249,47 @@ group_dct.add_argument(
     "--selection_mode",
     type=str,
     default="random",
-    help="Selection mode" " (random/ uniform/ correlation, default: random)",
+    help="Selection mode" 
+    " (random/ uniform/ correlation, default: random)",
+)
+
+# KD
+group_kd = parser.add_argument_group("KD")
+group_kd.add_argument(
+    "--t_band_group",
+    type=int,
+    default=0,
+    help="Number of group that teacher model uses (default = 0 -> Not use KD)",
+)
+group_kd.add_argument(
+    "--t_use_freq",
+    type=int,
+    default=1,
+    help="Number of frequencies that teacher model uses",
+)
+group_kd.add_argument(
+    "--t_use_kernel",
+    type=int,
+    default=16,
+    help="Number of kernels that teacher model uses",
+)
+group_kd.add_argument(
+    "--t_restore",
+    type=str,
+    default=None,
+    help="Weights to use for initialization of teacher model, e.g. a checkpoint",
+)
+group_kd.add_argument(
+    "--kd_alpha", 
+    type=float, 
+    default=0.9,
+    help="alpha, hyperparams for kd loss"
+)
+group_kd.add_argument(
+    "--kd_temp", 
+    type=float,
+    default=20.0, 
+    help="temperature, hyperparams for kd loss"
 )
 
 args = parser.parse_args()
@@ -237,46 +298,69 @@ CUDA_DEVICE = get_device(args.cuda)
 
 # % of training samples
 SAMPLE_PERCENTAGE = args.training_sample
-# Data augmentation ?
+
+# Data augmentation
 FLIP_AUGMENTATION = args.flip_augmentation
 RADIATION_AUGMENTATION = args.radiation_augmentation
 MIXTURE_AUGMENTATION = args.mixture_augmentation
+
 # Dataset name
 DATASET = args.dataset
+
 # Model name
 MODEL = args.model
+
 # Number of runs (for cross-validation)
 N_RUNS = args.runs
+
 # Spatial context size (number of neighbours in each spatial direction)
 PATCH_SIZE = args.patch_size
-# Add some visualization of the spectra ?
+
+# Add some visualization of the spectra
 DATAVIZ = args.with_exploration
+
 # Target folder to store/download/load the datasets
 FOLDER = args.folder
+
 # Number of epochs to run
 EPOCH = args.epoch
+
 # Sampling mode, e.g random sampling
 SAMPLING_MODE = args.sampling_mode
+
 # Pre-computed weights to restore
 CHECKPOINT = args.restore
+
 # Learning rate for the SGD
 LEARNING_RATE = args.lr
+
 # Automated class balancing
 CLASS_BALANCING = args.class_balancing
+
 # Training ground truth file
 TRAIN_GT = args.train_set
+
 # Testing ground truth file
 VAL_GT = args.val_set
+
 # Testing ground truth file
 TEST_GT = args.test_set
 TEST_STRIDE = args.test_stride
 
 # DCT
 BAND_GROUP = args.band_group
-USE_FREQ   = args.use_freq
+USE_FREQ = args.use_freq
 USE_KERNEL = args.use_kernel
 BAND_SELECT = args.band_selection
 SELECT_MODE = args.selection_mode
+
+# KD
+T_BAND_GROUP = args.t_band_group
+T_USE_FREQ = args.t_use_freq
+T_USE_KERNEL = args.t_use_kernel
+T_CHECKPOINT = args.t_restore
+T_KD_ALPHA = args.kd_alpha
+T_KD_TEMP = args.kd_temp
 
 # NAME
 if BAND_GROUP is not 0:
@@ -297,11 +381,24 @@ if not viz.check_connection:
 
 hyperparams = vars(args)
 # Load the dataset
-img, gt, LABEL_VALUES, IGNORED_LABELS, RGB_BANDS, palette = get_dataset(DATASET, FOLDER, BAND_GROUP, USE_FREQ, BAND_SELECT, SELECT_MODE)
+if(T_BAND_GROUP != 0): # KD is used
+	img, t_img, gt, LABEL_VALUES, IGNORED_LABELS, RGB_BANDS, palette = get_dataset(DATASET, FOLDER, 
+																					BAND_GROUP, USE_FREQ, 
+																					BAND_SELECT, SELECT_MODE,
+																					T_BAND_GROUP, T_USE_FREQ)
+else:
+	img, gt, LABEL_VALUES, IGNORED_LABELS, RGB_BANDS, palette = get_dataset(DATASET, FOLDER, 
+																			BAND_GROUP, USE_FREQ, 
+																			BAND_SELECT, SELECT_MODE)
+
 # Number of classes
 N_CLASSES = len(LABEL_VALUES)
+
 # Number of bands (last dimension of the image tensor)
 N_BANDS = img.shape[-1]
+
+if(T_BAND_GROUP != 0):
+	T_N_BANDS = t_img.shape[-1]
 
 # Parameters for the SVM grid search
 SVM_GRID_PARAMS = [
@@ -324,20 +421,39 @@ def convert_from_color(x):
     return convert_from_color_(x, palette=invert_palette)
 
 # Instantiate the experiment based on predefined networks
-hyperparams.update(
-    {
-        "n_classes": N_CLASSES,
-        "n_bands": N_BANDS,
-        "ignored_labels": IGNORED_LABELS,
-        "device": CUDA_DEVICE,
-        "n_kernel": USE_KERNEL, 
-    }
-)
+if(T_BAND_GROUP != 0): # KD is used
+	hyperparams.update(
+    	{
+        	"n_classes": N_CLASSES,
+        	"n_bands": N_BANDS,
+        	"ignored_labels": IGNORED_LABELS,
+        	"device": CUDA_DEVICE,
+        	"n_kernel": USE_KERNEL,
+        	"t_band_group": T_BAND_GROUP,
+        	"t_n_bands": T_N_BANDS,
+        	"t_use_kernel": T_USE_KERNEL, 
+    	}
+	)
+else:
+	hyperparams.update(
+    	{
+        	"n_classes": N_CLASSES,
+        	"n_bands": N_BANDS,
+        	"ignored_labels": IGNORED_LABELS,
+        	"device": CUDA_DEVICE,
+        	"n_kernel": USE_KERNEL,
+        	"t_band_group": T_BAND_GROUP, 
+    	}
+	)
 hyperparams = dict((k, v) for k, v in hyperparams.items() if v is not None)
 
 # Show the image and the ground truth
 display_dataset(img, gt, RGB_BANDS, LABEL_VALUES, palette, viz)
 color_gt = convert_to_color(gt)
+
+# KD
+if(T_BAND_GROUP != 0):
+	display_dataset(t_img, gt, RGB_BANDS, LABEL_VALUES, palette, viz)	
 
 if DATAVIZ:
     # Data exploration : compute and show the mean spectrums
@@ -430,8 +546,14 @@ for run in range(N_RUNS):
         if CLASS_BALANCING:
             weights = compute_imf_weights(train_gt, N_CLASSES, IGNORED_LABELS)
             hyperparams["weights"] = torch.from_numpy(weights)
+
         # Neural network
-        model, optimizer, loss, hyperparams = get_model(MODEL, **hyperparams)
+        if(T_BAND_GROUP != 0):
+        	model, t_model, optimizer, loss, hyperparams = get_model(MODEL, **hyperparams)    
+        	img = np.concatenate((img, t_img), axis=2)
+        	t_model.load_state_dict(torch.load(T_CHECKPOINT))    	
+        else:
+        	model, optimizer, loss, hyperparams = get_model(MODEL, **hyperparams)
 
         # Split train set in train/val
         if VAL_GT is not None:
@@ -451,6 +573,7 @@ for run in range(N_RUNS):
             # pin_memory=hyperparams['device'],
             shuffle=True,
         )
+
         val_dataset = HyperX(img, val_gt, **hyperparams)
         val_loader = data.DataLoader(
             val_dataset,
@@ -470,26 +593,53 @@ for run in range(N_RUNS):
         if CHECKPOINT is not None:
             model.load_state_dict(torch.load(CHECKPOINT))
 
-        try:
-            train(
-                model,
-                optimizer,
-                loss,
-                train_loader,
-                hyperparams["epoch"],
-                scheduler=hyperparams["scheduler"],
-                device=hyperparams["device"],
-                supervision=hyperparams["supervision"],
-                val_loader=val_loader,
-                display=viz,
-                name=NAME,
-            )
-        except KeyboardInterrupt:
-            # Allow the user to stop the training
-            pass
+        if(T_BAND_GROUP != 0): # KD is used
+        	try:
+        		train(
+            		model,
+                	optimizer,
+                	loss,
+                	train_loader,
+                	hyperparams["epoch"],
+                	scheduler=hyperparams["scheduler"],
+                	device=hyperparams["device"],
+                	supervision=hyperparams["supervision"],
+                	val_loader=val_loader,
+                	display=viz,
+                	name=NAME,
+                	t_net=t_model,
+                	t_alpha=T_KD_ALPHA,
+                	t_temp=T_KD_TEMP,
+                	n_bands=N_BANDS,
+            	)
+        	except KeyboardInterrupt:
+        		# Allow the user to stop the training
+        		pass
 
-        probabilities = test(model, img, hyperparams)
-        prediction = np.argmax(probabilities, axis=-1)
+        	probabilities = test(model, img[:, :, :N_BANDS], hyperparams)
+        	prediction = np.argmax(probabilities, axis=-1)
+
+        else:
+        	try:
+        		train(
+                	model,
+                	optimizer,
+                	loss,
+                	train_loader,
+                	hyperparams["epoch"],
+                	scheduler=hyperparams["scheduler"],
+                	device=hyperparams["device"],
+                	supervision=hyperparams["supervision"],
+                	val_loader=val_loader,
+                	display=viz,
+                	name=NAME,
+            	)
+        	except KeyboardInterrupt:
+        		# Allow the user to stop the training
+        		pass
+
+        	probabilities = test(model, img, hyperparams)
+        	prediction = np.argmax(probabilities, axis=-1)
 
     run_results = metrics(
         prediction,

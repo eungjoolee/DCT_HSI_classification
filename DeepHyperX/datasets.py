@@ -141,7 +141,12 @@ def DCT(img, band_group, use_freq):
             
     return output_img    
 
-def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, band_sel=0, sel_mode="random", datasets=DATASETS_CONFIG):
+def get_dataset(dataset_name, target_folder="./", 
+                band_group=0, use_freq=1, 
+                band_sel=0, sel_mode="random",
+                t_band_group=0, t_use_freq=1, 
+                datasets=DATASETS_CONFIG):
+
     """Gets the dataset specified by name and return the related components.
     Args:
         dataset_name: string with the name of the dataset
@@ -363,14 +368,25 @@ def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, band
     img = np.asarray(img, dtype="float32")
     
     # DCT or Band Selection
-    if(band_group != 0):
+    if(band_group != 0): # Using DCT
         print("Split %d bands into %d groups and use %d frequency" % (img.shape[-1], band_group, use_freq))
-        img = DCT(img, band_group, use_freq)
+        img_1 = DCT(img, band_group, use_freq)
         rgb_bands = (0, 0, 0)
-    elif(band_sel != 0):       
+
+        # KD
+        if(t_band_group != 0): # Using KD
+            print("Apply KD...")
+            print("Split %d bands into %d groups and use %d frequency" % (img.shape[-1], t_band_group, t_use_freq))
+            img_2 = DCT(img, t_band_group, t_use_freq)
+
+        else: # Not using KD
+            img = img_1
+
+    elif(band_sel != 0): # Using Band Selection
         if(sel_mode == "uniform"):
             print("Apply Uniform Band Selection...")     
             band_idx_sample = np.arange(0, img.shape[2], img.shape[2]//band_sel)[0:band_sel]
+
         elif((sel_mode == "correlation") & (dataset_name == "IndianPines")):
             print("Apply Correlation-Matrix Based Band Selection...")
             # seperated by correlation matrix
@@ -391,6 +407,7 @@ def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, band
 
             # indices are required to be int
             band_idx_sample = band_idx_sample.astype(int)
+
         else:
             print("Apply Random Band Selection...")        
             band_idx = np.arange(img.shape[2])
@@ -404,9 +421,14 @@ def get_dataset(dataset_name, target_folder="./", band_group=0, use_freq=1, band
         img = img[:, :, band_idx_sample]
         img = (img - np.min(img)) / (np.max(img) - np.min(img))
         rgb_bands = (0, 0, 0)
+
     else:
         img = (img - np.min(img)) / (np.max(img) - np.min(img))
-    return img, gt, label_values, ignored_labels, rgb_bands, palette
+
+    if(t_band_group != 0):
+        return img_1, img_2, gt, label_values, ignored_labels, rgb_bands, palette
+    else:
+        return img, gt, label_values, ignored_labels, rgb_bands, palette
 
 
 class HyperX(torch.utils.data.Dataset):

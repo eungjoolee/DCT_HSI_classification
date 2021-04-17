@@ -1,0 +1,260 @@
+Computation on CUDA GPU device 0
+Split 200 bands into 4 groups and use 50 frequency
+Image has dimensions 145x145 and 200 channels
+Using existing train/test split...
+7374 samples selected (over 10249)
+Running an experiment with the he_customized model run 1/1
+Using existing train/val split...
+{'dataset': 'IndianPines', 'model': 'he_customized', 'folder': './Datasets/', 'cuda': 0, 'runs': 1, 'training_sample': 0.8, 'sampling_mode': 'fixed', 'train_set': './Datasets/IndianPines/train.mat', 'test_set': './Datasets/IndianPines/test.mat', 'val_set': './Datasets/IndianPines/val.mat', 'epoch': 100, 'lr': 0.01, 'class_balancing': False, 'test_stride': 1, 'flip_augmentation': True, 'radiation_augmentation': False, 'mixture_augmentation': False, 'with_exploration': False, 'band_group': 4, 'use_freq': 50, 'use_kernel': 16, 'band_selection': 0, 'selection_mode': 'random', 't_band_group': 0, 't_use_freq': 1, 't_use_kernel': 16, 'n_classes': 17, 'n_bands': 200, 'ignored_labels': [0], 'device': device(type='cuda', index=0), 'n_kernel': 16, 'weights': tensor([0., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.],
+       device='cuda:0'), 'patch_size': 7, 'batch_size': 40, 'learning_rate': 0.01, 'scheduler': <torch.optim.lr_scheduler.ReduceLROnPlateau object at 0x7f333d230f90>, 'supervision': 'full', 'center_pixel': True}
+Network :
+==========================================================================================
+Layer (type:depth-idx)                   Output Shape              Param #
+==========================================================================================
+├─Conv3d: 1-1                            [-1, 16, 64, 5, 5]        1,600
+├─Conv3d: 1-2                            [-1, 16, 64, 5, 5]        272
+├─Conv3d: 1-3                            [-1, 16, 64, 5, 5]        784
+├─Conv3d: 1-4                            [-1, 16, 64, 5, 5]        1,296
+├─Conv3d: 1-5                            [-1, 16, 64, 5, 5]        2,832
+├─Conv3d: 1-6                            [-1, 16, 64, 5, 5]        272
+├─Conv3d: 1-7                            [-1, 16, 64, 5, 5]        784
+├─Conv3d: 1-8                            [-1, 16, 64, 5, 5]        1,296
+├─Conv3d: 1-9                            [-1, 16, 64, 5, 5]        2,832
+├─Conv3d: 1-10                           [-1, 16, 62, 4, 4]        3,088
+├─Dropout: 1-11                          [-1, 15872]               --
+├─Linear: 1-12                           [-1, 17]                  269,841
+==========================================================================================
+Total params: 284,897
+Trainable params: 284,897
+Non-trainable params: 0
+Total mult-adds (M): 22.24
+==========================================================================================
+Input size (MB): 0.04
+Forward/backward pass size (MB): 1.88
+Params size (MB): 1.09
+Estimated Total Size (MB): 3.00
+==========================================================================================
+Train (epoch 1/100) [3960/7120 (56%)]	Loss: 1.964033
+Train (epoch 2/100) [840/7120 (12%)]	Loss: 1.137354
+Train (epoch 2/100) [4840/7120 (68%)]	Loss: 1.004551
+Train (epoch 3/100) [1720/7120 (24%)]	Loss: 0.939866
+Train (epoch 3/100) [5720/7120 (80%)]	Loss: 0.876930
+Train (epoch 4/100) [2600/7120 (37%)]	Loss: 0.793137
+Train (epoch 4/100) [6600/7120 (93%)]	Loss: 0.753641
+Train (epoch 5/100) [3480/7120 (49%)]	Loss: 0.753091
+Train (epoch 6/100) [360/7120 (5%)]	Loss: 0.700626
+Train (epoch 6/100) [4360/7120 (61%)]	Loss: 0.679524
+Train (epoch 7/100) [1240/7120 (17%)]	Loss: 0.660025
+Train (epoch 7/100) [5240/7120 (74%)]	Loss: 0.643086
+Train (epoch 8/100) [2120/7120 (30%)]	Loss: 0.629187
+Train (epoch 8/100) [6120/7120 (86%)]	Loss: 0.599009
+Train (epoch 9/100) [3000/7120 (42%)]	Loss: 0.589745
+Train (epoch 9/100) [7000/7120 (98%)]	Loss: 0.601117
+Train (epoch 10/100) [3880/7120 (54%)]	Loss: 0.571373
+Train (epoch 11/100) [760/7120 (11%)]	Loss: 0.547341
+Train (epoch 11/100) [4760/7120 (67%)]	Loss: 0.544875
+Train (epoch 12/100) [1640/7120 (23%)]	Loss: 0.536449
+Train (epoch 12/100) [5640/7120 (79%)]	Loss: 0.544785
+Train (epoch 13/100) [2520/7120 (35%)]	Loss: 0.534858
+Train (epoch 13/100) [6520/7120 (92%)]	Loss: 0.508440
+Train (epoch 14/100) [3400/7120 (48%)]	Loss: 0.524901
+Train (epoch 15/100) [280/7120 (4%)]	Loss: 0.494597
+Train (epoch 15/100) [4280/7120 (60%)]	Loss: 0.485612
+Train (epoch 16/100) [1160/7120 (16%)]	Loss: 0.491827
+Train (epoch 16/100) [5160/7120 (72%)]	Loss: 0.474590
+Train (epoch 17/100) [2040/7120 (29%)]	Loss: 0.455865
+Train (epoch 17/100) [6040/7120 (85%)]	Loss: 0.479440
+Train (epoch 18/100) [2920/7120 (41%)]	Loss: 0.476656
+Train (epoch 18/100) [6920/7120 (97%)]	Loss: 0.458275
+Train (epoch 19/100) [3800/7120 (53%)]	Loss: 0.443790
+Train (epoch 20/100) [680/7120 (10%)]	Loss: 0.457467
+Train (epoch 20/100) [4680/7120 (66%)]	Loss: 0.419239
+Saving neural network weights in 2021-04-17 02:06:30.560199_epoch20_0.83_gp_4_fq_50_ch_16
+Train (epoch 21/100) [1560/7120 (22%)]	Loss: 0.439136
+Train (epoch 21/100) [5560/7120 (78%)]	Loss: 0.423277
+Train (epoch 22/100) [2440/7120 (34%)]	Loss: 0.424379
+Train (epoch 22/100) [6440/7120 (90%)]	Loss: 0.420934
+Train (epoch 23/100) [3320/7120 (47%)]	Loss: 0.425654
+Train (epoch 24/100) [200/7120 (3%)]	Loss: 0.390740
+Train (epoch 24/100) [4200/7120 (59%)]	Loss: 0.407701
+Train (epoch 25/100) [1080/7120 (15%)]	Loss: 0.393233
+Train (epoch 25/100) [5080/7120 (71%)]	Loss: 0.403127
+Train (epoch 26/100) [1960/7120 (28%)]	Loss: 0.409530
+Train (epoch 26/100) [5960/7120 (84%)]	Loss: 0.406605
+Train (epoch 27/100) [2840/7120 (40%)]	Loss: 0.373778
+Train (epoch 27/100) [6840/7120 (96%)]	Loss: 0.390801
+Train (epoch 28/100) [3720/7120 (52%)]	Loss: 0.383342
+Train (epoch 29/100) [600/7120 (8%)]	Loss: 0.376309
+Train (epoch 29/100) [4600/7120 (65%)]	Loss: 0.381221
+Train (epoch 30/100) [1480/7120 (21%)]	Loss: 0.359308
+Train (epoch 30/100) [5480/7120 (77%)]	Loss: 0.376945
+Train (epoch 31/100) [2360/7120 (33%)]	Loss: 0.360217
+Train (epoch 31/100) [6360/7120 (89%)]	Loss: 0.367749
+Train (epoch 32/100) [3240/7120 (46%)]	Loss: 0.356989
+Train (epoch 33/100) [120/7120 (2%)]	Loss: 0.348957
+Train (epoch 33/100) [4120/7120 (58%)]	Loss: 0.360508
+Train (epoch 34/100) [1000/7120 (14%)]	Loss: 0.346071
+Train (epoch 34/100) [5000/7120 (70%)]	Loss: 0.329307
+Train (epoch 35/100) [1880/7120 (26%)]	Loss: 0.338826
+Train (epoch 35/100) [5880/7120 (83%)]	Loss: 0.358149
+Train (epoch 36/100) [2760/7120 (39%)]	Loss: 0.337788
+Train (epoch 36/100) [6760/7120 (95%)]	Loss: 0.339819
+Train (epoch 37/100) [3640/7120 (51%)]	Loss: 0.317638
+Train (epoch 38/100) [520/7120 (7%)]	Loss: 0.348921
+Train (epoch 38/100) [4520/7120 (63%)]	Loss: 0.328107
+Train (epoch 39/100) [1400/7120 (20%)]	Loss: 0.335137
+Train (epoch 39/100) [5400/7120 (76%)]	Loss: 0.307608
+Train (epoch 40/100) [2280/7120 (32%)]	Loss: 0.324781
+Train (epoch 40/100) [6280/7120 (88%)]	Loss: 0.332940
+Saving neural network weights in 2021-04-17 02:07:13.751779_epoch40_0.86_gp_4_fq_50_ch_16
+Train (epoch 41/100) [3160/7120 (44%)]	Loss: 0.303537
+Train (epoch 42/100) [40/7120 (1%)]	Loss: 0.324017
+Train (epoch 42/100) [4040/7120 (57%)]	Loss: 0.324279
+Train (epoch 43/100) [920/7120 (13%)]	Loss: 0.315320
+Train (epoch 43/100) [4920/7120 (69%)]	Loss: 0.314953
+Train (epoch 44/100) [1800/7120 (25%)]	Loss: 0.310227
+Train (epoch 44/100) [5800/7120 (81%)]	Loss: 0.300765
+Train (epoch 45/100) [2680/7120 (38%)]	Loss: 0.311989
+Train (epoch 45/100) [6680/7120 (94%)]	Loss: 0.309599
+Train (epoch 46/100) [3560/7120 (50%)]	Loss: 0.300575
+Train (epoch 47/100) [440/7120 (6%)]	Loss: 0.287112
+Train (epoch 47/100) [4440/7120 (62%)]	Loss: 0.294379
+Train (epoch 48/100) [1320/7120 (19%)]	Loss: 0.308203
+Train (epoch 48/100) [5320/7120 (75%)]	Loss: 0.292570
+Train (epoch 49/100) [2200/7120 (31%)]	Loss: 0.300438
+Train (epoch 49/100) [6200/7120 (87%)]	Loss: 0.282935
+Train (epoch 50/100) [3080/7120 (43%)]	Loss: 0.276216
+Train (epoch 50/100) [5133/5162 (99%)]	Loss: 0.296822
+Train (epoch 51/100) [3960/7120 (56%)]	Loss: 0.285822
+Train (epoch 52/100) [840/7120 (12%)]	Loss: 0.270297
+Train (epoch 52/100) [4840/7120 (68%)]	Loss: 0.288918
+Train (epoch 53/100) [1720/7120 (24%)]	Loss: 0.285557
+Train (epoch 53/100) [5720/7120 (80%)]	Loss: 0.291562
+Train (epoch 54/100) [2600/7120 (37%)]	Loss: 0.266691
+Train (epoch 54/100) [6600/7120 (93%)]	Loss: 0.283715
+Train (epoch 55/100) [3480/7120 (49%)]	Loss: 0.275751
+Train (epoch 56/100) [360/7120 (5%)]	Loss: 0.276102
+Train (epoch 56/100) [4360/7120 (61%)]	Loss: 0.270166
+Train (epoch 57/100) [1240/7120 (17%)]	Loss: 0.287384
+Train (epoch 57/100) [5240/7120 (74%)]	Loss: 0.264618
+Train (epoch 58/100) [2120/7120 (30%)]	Loss: 0.276471
+Train (epoch 58/100) [6120/7120 (86%)]	Loss: 0.268003
+Train (epoch 59/100) [3000/7120 (42%)]	Loss: 0.272001
+Train (epoch 59/100) [7000/7120 (98%)]	Loss: 0.260990
+Train (epoch 60/100) [3880/7120 (54%)]	Loss: 0.264404
+Saving neural network weights in 2021-04-17 02:07:57.367844_epoch60_0.89_gp_4_fq_50_ch_16
+Train (epoch 61/100) [760/7120 (11%)]	Loss: 0.270298
+Train (epoch 61/100) [4760/7120 (67%)]	Loss: 0.259339
+Train (epoch 62/100) [1640/7120 (23%)]	Loss: 0.260977
+Train (epoch 62/100) [5640/7120 (79%)]	Loss: 0.264134
+Train (epoch 63/100) [2520/7120 (35%)]	Loss: 0.254286
+Train (epoch 63/100) [6520/7120 (92%)]	Loss: 0.261288
+Train (epoch 64/100) [3400/7120 (48%)]	Loss: 0.263756
+Train (epoch 65/100) [280/7120 (4%)]	Loss: 0.262822
+Train (epoch 65/100) [4280/7120 (60%)]	Loss: 0.258936
+Train (epoch 66/100) [1160/7120 (16%)]	Loss: 0.259636
+Train (epoch 66/100) [5160/7120 (72%)]	Loss: 0.261692
+Train (epoch 67/100) [2040/7120 (29%)]	Loss: 0.246660
+Train (epoch 67/100) [6040/7120 (85%)]	Loss: 0.247604
+Train (epoch 68/100) [2920/7120 (41%)]	Loss: 0.269643
+Train (epoch 68/100) [6920/7120 (97%)]	Loss: 0.243841
+Train (epoch 69/100) [3800/7120 (53%)]	Loss: 0.253933
+Train (epoch 70/100) [680/7120 (10%)]	Loss: 0.237719
+Train (epoch 70/100) [4680/7120 (66%)]	Loss: 0.255302
+Train (epoch 71/100) [1560/7120 (22%)]	Loss: 0.237542
+Train (epoch 71/100) [5560/7120 (78%)]	Loss: 0.239552
+Train (epoch 72/100) [2440/7120 (34%)]	Loss: 0.250938
+Train (epoch 72/100) [6440/7120 (90%)]	Loss: 0.248805
+Train (epoch 73/100) [3320/7120 (47%)]	Loss: 0.244416
+Train (epoch 74/100) [200/7120 (3%)]	Loss: 0.249466
+Train (epoch 74/100) [4200/7120 (59%)]	Loss: 0.239419
+Train (epoch 75/100) [1080/7120 (15%)]	Loss: 0.235814
+Train (epoch 75/100) [5080/7120 (71%)]	Loss: 0.233656
+Train (epoch 76/100) [1960/7120 (28%)]	Loss: 0.236236
+Train (epoch 76/100) [5960/7120 (84%)]	Loss: 0.236964
+Train (epoch 77/100) [2840/7120 (40%)]	Loss: 0.216962
+Train (epoch 77/100) [6840/7120 (96%)]	Loss: 0.237598
+Train (epoch 78/100) [3720/7120 (52%)]	Loss: 0.232646
+Train (epoch 79/100) [600/7120 (8%)]	Loss: 0.244786
+Train (epoch 79/100) [4600/7120 (65%)]	Loss: 0.232956
+Train (epoch 80/100) [1480/7120 (21%)]	Loss: 0.234568
+Train (epoch 80/100) [5480/7120 (77%)]	Loss: 0.233049
+Saving neural network weights in 2021-04-17 02:08:41.354717_epoch80_0.89_gp_4_fq_50_ch_16
+Train (epoch 81/100) [2360/7120 (33%)]	Loss: 0.230339
+Train (epoch 81/100) [6360/7120 (89%)]	Loss: 0.218997
+Train (epoch 82/100) [3240/7120 (46%)]	Loss: 0.220131
+Train (epoch 83/100) [120/7120 (2%)]	Loss: 0.228858
+Train (epoch 83/100) [4120/7120 (58%)]	Loss: 0.221827
+Train (epoch 84/100) [1000/7120 (14%)]	Loss: 0.222668
+Train (epoch 84/100) [5000/7120 (70%)]	Loss: 0.232910
+Train (epoch 85/100) [1880/7120 (26%)]	Loss: 0.224848
+Train (epoch 85/100) [5880/7120 (83%)]	Loss: 0.220110
+Train (epoch 86/100) [2760/7120 (39%)]	Loss: 0.214189
+Train (epoch 86/100) [6760/7120 (95%)]	Loss: 0.226162
+Train (epoch 87/100) [3640/7120 (51%)]	Loss: 0.228611
+Train (epoch 88/100) [520/7120 (7%)]	Loss: 0.227977
+Train (epoch 88/100) [4520/7120 (63%)]	Loss: 0.228537
+Train (epoch 89/100) [1400/7120 (20%)]	Loss: 0.224614
+Train (epoch 89/100) [5400/7120 (76%)]	Loss: 0.212090
+Train (epoch 90/100) [2280/7120 (32%)]	Loss: 0.222090
+Train (epoch 90/100) [6280/7120 (88%)]	Loss: 0.210008
+Train (epoch 91/100) [3160/7120 (44%)]	Loss: 0.209187
+Train (epoch 92/100) [40/7120 (1%)]	Loss: 0.218252
+Train (epoch 92/100) [4040/7120 (57%)]	Loss: 0.217878
+Train (epoch 93/100) [920/7120 (13%)]	Loss: 0.222027
+Train (epoch 93/100) [4920/7120 (69%)]	Loss: 0.210956
+Train (epoch 94/100) [1800/7120 (25%)]	Loss: 0.207797
+Train (epoch 94/100) [5800/7120 (81%)]	Loss: 0.214819
+Train (epoch 95/100) [2680/7120 (38%)]	Loss: 0.210364
+Train (epoch 95/100) [6680/7120 (94%)]	Loss: 0.215188
+Train (epoch 96/100) [3560/7120 (50%)]	Loss: 0.217963
+Train (epoch 97/100) [440/7120 (6%)]	Loss: 0.213335
+Train (epoch 97/100) [4440/7120 (62%)]	Loss: 0.204548
+Train (epoch 98/100) [1320/7120 (19%)]	Loss: 0.209700
+Train (epoch 98/100) [5320/7120 (75%)]	Loss: 0.222504
+Train (epoch 99/100) [2200/7120 (31%)]	Loss: 0.200419
+Train (epoch 99/100) [6200/7120 (87%)]	Loss: 0.218351
+Train (epoch 100/100) [3080/7120 (43%)]	Loss: 0.206357
+Train (epoch 100/100) [5133/5162 (99%)]	Loss: 0.215284
+Saving neural network weights in 2021-04-17 02:09:25.519213_epoch100_0.90_gp_4_fq_50_ch_16
+Confusion matrix :
+[[  0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   9   0   0   0   0   0   0   0   0   0   0   1   0   0   0   0]
+ [  0   0 249   9   1   0   0   0   0   0   0  23   4   0   0   0   0]
+ [ 11   0   1 151   3   0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0  48   0   0   0   0   0   0   0   0   0   0   0   0]
+ [  7   0   0   0   0  89   0   0   0   0   0   0   0   0   0   1   0]
+ [  0   0   0   0   0   0 145   0   0   0   0   0   0   0   0   1   0]
+ [  0   0   0   0   0   0   0   6   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0  96   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   4   0   0   0   0   0   0   0]
+ [  6   0   3   9   3   1   0   0   0   0 147  24   2   0   0   0   0]
+ [ 13   0   6   4   1   0   0   0   0   0   2 461   4   0   0   0   0]
+ [  1   0   7   2   0   0   0   0   0   0   3   2 104   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0   0  41   0   0   0]
+ [  0   0   0   0   1   0   0   0   0   0   0   0   0   0 252   0   0]
+ [ 15   0   0   0   0   0   0   0   0   0   0   0   0   0   3  60   0]
+ [  0   0   0   1   0   0   0   0   0   0   0   0   0   0   0   0  18]]---
+Accuracy : 91.484%
+---
+F1 scores :
+	Undefined: 0.000
+	Alfalfa: 0.947
+	Corn-notill: 0.902
+	Corn-mintill: 0.883
+	Corn: 0.914
+	Grass-pasture: 0.952
+	Grass-trees: 0.997
+	Grass-pasture-mowed: 1.000
+	Hay-windrowed: 1.000
+	Oats: 1.000
+	Soybean-notill: 0.847
+	Soybean-mintill: 0.921
+	Soybean-clean: 0.889
+	Wheat: 1.000
+	Woods: 0.992
+	Buildings-Grass-Trees-Drives: 0.857
+	Stone-Steel-Towers: 0.973
+---
+Kappa: 0.903
+
